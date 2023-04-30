@@ -1,3 +1,4 @@
+//! ЗАКОНЧИЛ ЗДЕСЬ НА 28.41 
 const path = require('path'),
       express = require('express'),
       app = express(),
@@ -6,7 +7,7 @@ const path = require('path'),
         cors: { origin: "http://localhost:3000", methods: ["GET", "POST", "websocket"] }
       }),
 
-      ACTION = require('./src/socket/actions'),
+      ACTIONS = require('./src/socket/actions'),
       PORT = process.env.PORT || 3001;
 
 const getClientRooms = () => {
@@ -15,14 +16,14 @@ const getClientRooms = () => {
 }
 
 const shareRoomsInfo = () => {
-  io.emit(ACTION.SHARE_ROOMS, {
+  io.emit(ACTIONS.SHARE_ROOMS, {
     rooms: getClientRooms()
   })
 }
 
 io.on('connection', socket => {
   shareRoomsInfo();
-  socket.on(ACTION.JOIN, config => {
+  socket.on(ACTIONS.JOIN, config => {
     const { room: roomID} = config;
     const {rooms: joinedRooms } = socket;
     if (Array.from(joinedRooms).includes(roomID)) {
@@ -31,14 +32,45 @@ io.on('connection', socket => {
     const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
     clients.forEach(clientID => {
       io.to(clientID).emit(ACTION.ADD_PEER, {
-        //! ЗАКОНЧИЛ ЗДЕСЬ НА 24.20 
-        peerID
-      })
-    });
+        peerID: socket.id,
+        createOffer: false
+      });
 
-  })
+      socket.emit(ACTIONS.ADD_PEER, {
+        peerID: clientID,
+        createOffer: true
+      });
+    });
+    socket.join(roomID);
+    shareRoomsInfo();
+  });
   console.log('Socket connected');
-})
+
+  const leaveRoom = () => {
+    const { rooms } = socket;
+    Array.from(rooms)
+      .forEach(roomID => {
+        const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
+        clients.forEach(clientID => {
+          io.ro(clientID).emit(ACTIONS.REMOVE_PEER, {
+            peerID: clientID
+          });
+  
+          socket.emit(ACTIONS.REMOVE_PEER, {
+            peerID: socket.id
+          });
+        });
+      
+        socket.leave(roomID);
+      });
+    shareRoomsInfo();
+  }
+  
+  socket.on(ACTIONS.LEAVE, leaveRoom);
+  socket.on('disconnect', leaveRoom)
+});
+
+
 
 server.listen(PORT, () => {
   console.log('listner PORT: ' + PORT);
