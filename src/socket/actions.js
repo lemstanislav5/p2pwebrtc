@@ -10,4 +10,4 @@ const ACTIONS = {
   SESSION_DISCRIPTION: 'session-description'
 }
 
-module.export = ACTIONS;
+module.exports = ACTIONS;

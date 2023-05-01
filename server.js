@@ -6,7 +6,6 @@ const path = require('path'),
       io = require('socket.io')(server, {
         cors: { origin: "http://localhost:3000", methods: ["GET", "POST", "websocket"] }
       }),
-
       ACTIONS = require('./src/socket/actions'),
       PORT = process.env.PORT || 3001;
 
@@ -16,7 +15,8 @@ const getClientRooms = () => {
 }
 
 const shareRoomsInfo = () => {
-  io.emit(ACTIONS.SHARE_ROOMS, {
+  console.log(ACTIONS)
+  io.sockets.emit(ACTIONS.SHARE_ROOMS, {
     rooms: getClientRooms()
   })
 }
@@ -31,7 +31,7 @@ io.on('connection', socket => {
     }
     const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
     clients.forEach(clientID => {
-      io.to(clientID).emit(ACTION.ADD_PEER, {
+      io.to(clientID).emit(ACTIONS.ADD_PEER, {
         peerID: socket.id,
         createOffer: false
       });
