@@ -10,7 +10,6 @@ const Main = (props) => {
   useEffect(() => {
     socket.on(ACTIONS.SHARE_ROOMS, (...args) => {
       const { rooms } = args[0];
-      console.log(rooms)
       updateRooms(rooms);
     }, [])
   })

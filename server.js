@@ -1,4 +1,4 @@
-//! ЗАКОНЧИЛ ЗДЕСЬ НА 28.41 
+//! ЗАКОНЧИЛ ЗДЕСЬ НА 28.41
 const path = require('path'),
       express = require('express'),
       app = express(),
@@ -7,15 +7,15 @@ const path = require('path'),
         cors: { origin: "http://localhost:3000", methods: ["GET", "POST", "websocket"] }
       }),
       ACTIONS = require('./src/socket/actions'),
-      PORT = process.env.PORT || 3001;
+      PORT = process.env.PORT || 3001,
+      {version, validate} = require('uuid');
 
 const getClientRooms = () => {
   const { rooms } = io.sockets.adapter;
-  return Array.from(rooms.keys());
+  return Array.from(rooms.keys()).filter(roomID => validate(roomID) && version(roomID) === 4);
 }
 
 const shareRoomsInfo = () => {
-  console.log(ACTIONS)
   io.sockets.emit(ACTIONS.SHARE_ROOMS, {
     rooms: getClientRooms()
   })
@@ -55,17 +55,17 @@ io.on('connection', socket => {
           io.ro(clientID).emit(ACTIONS.REMOVE_PEER, {
             peerID: clientID
           });
-  
+
           socket.emit(ACTIONS.REMOVE_PEER, {
             peerID: socket.id
           });
         });
-      
+
         socket.leave(roomID);
       });
     shareRoomsInfo();
   }
-  
+
   socket.on(ACTIONS.LEAVE, leaveRoom);
   socket.on('disconnect', leaveRoom)
 });
