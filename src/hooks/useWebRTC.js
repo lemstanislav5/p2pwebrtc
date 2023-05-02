@@ -11,10 +11,29 @@ const useWebRTC = (roomID) => {
   const localMediaStream = useRef(null);
   // ссылки на все пир-медиа элементы которые будут у нас на страницые
   const peerMediaElements = useRef({});
+  // функция для приема нового клиента
+  const addNewClient = useCallback((newClient, cb) => {
+    if (!clients.includes(newClient)) {
+      updateClients(list => [...list, newClient], cd)
+    }
+  }, [clients, updateClients])
 
   useEffect(() => {
+    const startCapture = async () => {
+      localMediaStream.current = await navgator.mediaDivices.getUserMedia({
+        audio: true,
+        video: {
+          width: 1280,
+          height: 720,
+        }
+      })
 
-  }, []);
+      addNewClient(LOCAL_VIDEO);
+    }
+    startCapture()
+      .then(() => socket.emit(ACTIONS.JOIN, {room: roomID}))
+      .catch(e => console.error('Error getting userMedia'));
+  }, [roomID]);
 }
 
 export default useWebRTC;
