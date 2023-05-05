@@ -8,7 +8,6 @@ const Room = (props) => {
 
   const {clients, provideMediaRef} = useWebRTC(roomID);
 
-  console.log(clients, provideMediaRef)
   return (
     <div>
       {

@@ -52,7 +52,7 @@ io.on('connection', socket => {
       .forEach(roomID => {
         const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
         clients.forEach(clientID => {
-          io.ro(clientID).emit(ACTIONS.REMOVE_PEER, {
+          io.to(clientID).emit(ACTIONS.REMOVE_PEER, {
             peerID: clientID
           });
 
@@ -67,7 +67,21 @@ io.on('connection', socket => {
   }
 
   socket.on(ACTIONS.LEAVE, leaveRoom);
-  socket.on('disconnect', leaveRoom)
+  socket.on('disconnect', leaveRoom);
+
+  socket.on(ACTIONS.RELAY_SDP, (peerID, sessionDiscription) => {
+    io.to(peerID).emit(ACTIONS.SESSION_DISCRIPTION, {
+      peerID: socket.id,
+      sessionDiscription,
+    })
+  });
+
+  socket.on(ACTIONS.RELAY_ICE, (peerID, iceCandidate) => {
+    io.to(peerID).emit(ACTIONS.ICE_CANDIDATE, {
+      peerID: socket.id,
+      iceCandidate,
+    })
+  });
 });
 
 

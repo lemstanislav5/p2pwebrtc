@@ -23,7 +23,9 @@ const Main = (props) => {
         { rooms.map(roomID => (
           <li key={roomID}>
             <span>{roomID}</span>
-            <button>JOIN ROOM</button>
+            <button onClick={() => {
+              navigate(`/room/${roomID}`);
+            }}>JOIN ROOM</button>
           </li>
         ))}
       </ul>
